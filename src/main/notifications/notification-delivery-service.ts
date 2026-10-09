@@ -36,6 +36,8 @@ export type NotificationDeliveryDependencies = {
   ) => NotificationDispatchResult | Promise<NotificationDispatchResult>
   platform: NodeJS.Platform
   now: () => number
+  /** Raises Orca and reveals the pane the request is about, as a click on its banner would. */
+  bringSubjectToFront: (request: NotificationDispatchRequest) => void
   /** Told once per path that actually announced the request: a desktop banner shown, or a mobile alert sent. */
   recordAnnounced?: (request: NotificationDispatchRequest) => void
 }
@@ -160,6 +162,16 @@ export function createNotificationDeliveryService(
         ) {
           return { delivered: false, reason: 'cooldown' }
         }
+      }
+
+      // Why: opt-in and macOS only. A focused Orca means the user is typing in it, so never switch panes under them.
+      if (
+        deps.platform === 'darwin' &&
+        settings.bringToFrontOnAgentTaskComplete &&
+        request.source === 'agent-task-complete' &&
+        !browserWindow?.isFocused()
+      ) {
+        deps.bringSubjectToFront(request)
       }
 
       if (!deps.isNotificationSupported()) {
