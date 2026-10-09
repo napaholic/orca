@@ -158,6 +158,8 @@ export function registerNotificationHandlers(store: Store, runtime?: OrcaRuntime
     recordDeliveryOutcome: recordNotificationDeliveryOutcome,
     deliverNative: deliverNativeNotification,
     bringSubjectToFront: (request) => createNotificationSubjectReveal(request)?.(),
+    isOrchestrationWorkerPane: (paneKey) =>
+      runtime?.getAgentStatusOrchestrationContextForPaneKey(paneKey) !== undefined,
     platform: process.platform,
     now: () => Date.now(),
     recordAnnounced: (request) => {

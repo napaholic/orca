@@ -38,6 +38,8 @@ export type NotificationDeliveryDependencies = {
   now: () => number
   /** Raises Orca and reveals the pane the request is about, as a click on its banner would. */
   bringSubjectToFront: (request: NotificationDispatchRequest) => void
+  /** True when the pane is running work another agent dispatched to it through orchestration. */
+  isOrchestrationWorkerPane: (paneKey: string) => boolean
   /** Told once per path that actually announced the request: a desktop banner shown, or a mobile alert sent. */
   recordAnnounced?: (request: NotificationDispatchRequest) => void
 }
@@ -165,11 +167,13 @@ export function createNotificationDeliveryService(
       }
 
       // Why: opt-in and macOS only. A focused Orca means the user is typing in it, so never switch panes under them.
+      // Workers report to their coordinator, not the user, so only panes the user is waiting on come forward.
       if (
         deps.platform === 'darwin' &&
         settings.bringToFrontOnAgentTaskComplete &&
         request.source === 'agent-task-complete' &&
-        !browserWindow?.isFocused()
+        !browserWindow?.isFocused() &&
+        !(request.paneKey && deps.isOrchestrationWorkerPane(request.paneKey))
       ) {
         deps.bringSubjectToFront(request)
       }

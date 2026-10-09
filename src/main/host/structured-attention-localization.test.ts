@@ -142,6 +142,7 @@ describe('structured host notification localization', () => {
         return { delivered: true }
       },
       bringSubjectToFront: () => {},
+      isOrchestrationWorkerPane: () => false,
       platform: 'linux',
       now: () => 60_000
     })
