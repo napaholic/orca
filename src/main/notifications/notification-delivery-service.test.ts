@@ -81,7 +81,7 @@ function makeHarness(settings: NotificationSettings, windowVisible = false): Har
       recordDeliveryOutcome: vi.fn(),
       deliverNative,
       bringSubjectToFront,
-      isOrchestrationWorkerPane: () => false,
+      isAgentOpenedPane: () => false,
       platform: 'linux',
       now: () => now
     }
@@ -230,10 +230,10 @@ describe('createNotificationDeliveryService', () => {
     expect(harness.deliverNative).toHaveBeenCalledTimes(1)
   })
 
-  it('leaves orchestration workers in the background but still notifies', async () => {
+  it('leaves a pane an agent opened in the background but still notifies', async () => {
     const harness = makeHarness(makeSettings({ bringToFrontOnAgentTaskComplete: true }))
     harness.deps.platform = 'darwin'
-    harness.deps.isOrchestrationWorkerPane = (paneKey) => paneKey === 'tab-2:worker'
+    harness.deps.isAgentOpenedPane = (paneKey) => paneKey === 'tab-2:worker'
     const service = createNotificationDeliveryService(harness.deps)
     await service.dispatch(makeRequest({ paneKey: 'tab-2:worker' }))
 
