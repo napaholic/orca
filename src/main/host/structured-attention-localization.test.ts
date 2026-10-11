@@ -143,6 +143,7 @@ describe('structured host notification localization', () => {
       },
       bringSubjectToFront: () => {},
       isAgentOpenedPane: () => false,
+      isTurnOpenedByUserPrompt: () => true,
       platform: 'linux',
       now: () => 60_000
     })

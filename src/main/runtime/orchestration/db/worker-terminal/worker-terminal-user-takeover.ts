@@ -64,6 +64,7 @@ export function markWorkerTerminalUserOwned(this: OrchestrationDb, paneKey: stri
 
 // True while orchestration opened this pane and the user has not typed into it.
 export function isPaneOrchestrationOwned(this: OrchestrationDb, paneKey: string): boolean {
+  // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: the query selects only the TEXT pane_key column; the adapter exposes unknown.
   const rows = this.db
     .prepare(
       `SELECT pane_key FROM worker_terminal_resources

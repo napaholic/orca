@@ -7726,7 +7726,7 @@
           "76e02467b8": "Cambiar archivo personalizado",
           "d3756cf5bc": "desactivado",
           "a5e9bc227c": "Traer Orca al frente",
-          "e5f3653f9c": "Cuando un agente termina mientras estás en otra app, trae Orca al frente y cambia a su pestaña."
+          "0472617283": "Cuando un agente termina de responder a tu prompt mientras estás en otra app, trae Orca al frente y cambia a su pestaña."
         },
         "OpenAiTranscriptionKeyDialog": {
           "fa83512e48": "Guardar clave",

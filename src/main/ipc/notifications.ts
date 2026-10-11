@@ -10,6 +10,7 @@ import type {
   StructuredNotificationRead
 } from '../../shared/notification-settings-types'
 import type { OrcaRuntimeService } from '../runtime/orca-runtime'
+import { agentHookServer } from '../agent-hooks/server'
 import { readNotificationAuthorizationStatus } from './notification-authorization-status'
 import { setTrayAttention } from '../tray/system-tray'
 import { isMainWindowVisible } from '../window/main-window-visibility'
@@ -160,6 +161,7 @@ export function registerNotificationHandlers(store: Store, runtime?: OrcaRuntime
     bringSubjectToFront: (request) => createNotificationSubjectReveal(request)?.(),
     isAgentOpenedPane: (paneKey) =>
       runtime?.getExistingOrchestrationDb()?.isPaneOrchestrationOwned(paneKey) ?? false,
+    isTurnOpenedByUserPrompt: (paneKey) => agentHookServer.isTurnOpenedByUserPrompt(paneKey),
     platform: process.platform,
     now: () => Date.now(),
     recordAnnounced: (request) => {

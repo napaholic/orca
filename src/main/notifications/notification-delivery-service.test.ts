@@ -82,6 +82,7 @@ function makeHarness(settings: NotificationSettings, windowVisible = false): Har
       deliverNative,
       bringSubjectToFront,
       isAgentOpenedPane: () => false,
+      isTurnOpenedByUserPrompt: () => true,
       platform: 'linux',
       now: () => now
     }
@@ -241,12 +242,35 @@ describe('createNotificationDeliveryService', () => {
     expect(harness.deliverNative).toHaveBeenCalledTimes(1)
   })
 
+  it('leaves a turn the agent woke itself for in the background but still notifies', async () => {
+    const harness = makeHarness(makeSettings({ bringToFrontOnAgentTaskComplete: true }))
+    harness.deps.platform = 'darwin'
+    harness.deps.isTurnOpenedByUserPrompt = () => false
+    const service = createNotificationDeliveryService(harness.deps)
+    await service.dispatch(makeRequest({ paneKey: 'tab-1:leaf-1' }))
+
+    expect(harness.bringSubjectToFront).not.toHaveBeenCalled()
+    expect(harness.deliverNative).toHaveBeenCalledTimes(1)
+  })
+
+  it('still brings a chat forward, whose journal records no turn opener', async () => {
+    const harness = makeHarness(makeSettings({ bringToFrontOnAgentTaskComplete: true }))
+    harness.deps.platform = 'darwin'
+    harness.deps.isTurnOpenedByUserPrompt = () => false
+    const request = makeRequest({ paneKey: 'chat-tab:session-1', surface: 'agent-session' })
+    await createNotificationDeliveryService(harness.deps).dispatch(request)
+
+    expect(harness.bringSubjectToFront).toHaveBeenCalledExactlyOnceWith(request)
+  })
+
   it('never switches panes under a user who is already in Orca', async () => {
     const harness = makeHarness(makeSettings({ bringToFrontOnAgentTaskComplete: true }))
     harness.deps.platform = 'darwin'
     const focusedWindow = makeFocusedWindowStub()
     harness.deps.findActiveWindow = () => focusedWindow
-    await createNotificationDeliveryService(harness.deps).dispatch(makeRequest())
+    await createNotificationDeliveryService(harness.deps).dispatch(
+      makeRequest({ paneKey: 'tab-1:leaf-1' })
+    )
 
     expect(harness.bringSubjectToFront).not.toHaveBeenCalled()
   })
@@ -254,17 +278,21 @@ describe('createNotificationDeliveryService', () => {
   it('keeps bring-to-front opt-in, macOS only, and limited to agent completions', async () => {
     const off = makeHarness(makeSettings())
     off.deps.platform = 'darwin'
-    await createNotificationDeliveryService(off.deps).dispatch(makeRequest())
+    await createNotificationDeliveryService(off.deps).dispatch(
+      makeRequest({ paneKey: 'tab-1:leaf-1' })
+    )
     expect(off.bringSubjectToFront).not.toHaveBeenCalled()
 
     const linux = makeHarness(makeSettings({ bringToFrontOnAgentTaskComplete: true }))
-    await createNotificationDeliveryService(linux.deps).dispatch(makeRequest())
+    await createNotificationDeliveryService(linux.deps).dispatch(
+      makeRequest({ paneKey: 'tab-1:leaf-1' })
+    )
     expect(linux.bringSubjectToFront).not.toHaveBeenCalled()
 
     const bell = makeHarness(makeSettings({ bringToFrontOnAgentTaskComplete: true }))
     bell.deps.platform = 'darwin'
     await createNotificationDeliveryService(bell.deps).dispatch(
-      makeRequest({ source: 'terminal-bell' })
+      makeRequest({ source: 'terminal-bell', paneKey: 'tab-1:leaf-1' })
     )
     expect(bell.bringSubjectToFront).not.toHaveBeenCalled()
   })
@@ -274,14 +302,16 @@ describe('createNotificationDeliveryService', () => {
       makeSettings({ bringToFrontOnAgentTaskComplete: true, agentTaskComplete: false })
     )
     disabled.deps.platform = 'darwin'
-    await createNotificationDeliveryService(disabled.deps).dispatch(makeRequest())
+    await createNotificationDeliveryService(disabled.deps).dispatch(
+      makeRequest({ paneKey: 'tab-1:leaf-1' })
+    )
     expect(disabled.bringSubjectToFront).not.toHaveBeenCalled()
 
     const burst = makeHarness(makeSettings({ bringToFrontOnAgentTaskComplete: true }))
     burst.deps.platform = 'darwin'
     const service = createNotificationDeliveryService(burst.deps)
-    await service.dispatch(makeRequest())
-    await service.dispatch(makeRequest())
+    await service.dispatch(makeRequest({ paneKey: 'tab-1:leaf-1' }))
+    await service.dispatch(makeRequest({ paneKey: 'tab-1:leaf-1' }))
     expect(burst.bringSubjectToFront).toHaveBeenCalledTimes(1)
   })
 

@@ -223,8 +223,8 @@ export function NotificationsPane({
             'Bring Orca to Front'
           )}
           description={translate(
-            'auto.components.settings.NotificationsPane.e5f3653f9c',
-            'When an agent finishes while you are in another app, bring Orca forward and switch to its tab.'
+            'auto.components.settings.NotificationsPane.0472617283',
+            'When an agent finishes replying to your prompt while you are in another app, bring Orca forward and switch to its tab.'
           )}
           checked={notificationSettings.bringToFrontOnAgentTaskComplete}
           disabled={!notificationSettings.enabled || !notificationSettings.agentTaskComplete}
